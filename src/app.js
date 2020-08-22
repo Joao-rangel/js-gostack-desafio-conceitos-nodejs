@@ -21,7 +21,7 @@ app.post("/repositories", (request, response) => {
   const newRepository = {
     id: uuid(),
     title,
-    url, // TODO deve ser url do github http://github.com/...
+    url,
     techs,
     likes: 0
   }
@@ -33,49 +33,54 @@ app.post("/repositories", (request, response) => {
 app.put("/repositories/:id", (request, response) => {
   const { id } = request.params
   const { title, url, techs } = request.body
-  
+
   const repositoryIndex = repositories.findIndex((repository) => repository.id === id)
 
-  const updatedRepository = {
+  if (repositoryIndex < 0) {
+    return response.status(400).json({ error: "id not found." })
+  }
+
+  const repository = {
     id,
     title,
     url,
     techs,
     likes: repositories[repositoryIndex].likes
   }
-  repositories.splice(repositoryIndex, 1, updatedRepository)
 
-  return response.json(updatedRepository)
+  repositories.splice(repositoryIndex, 1, repository)
+
+  return response.json(repository)
 });
 
 app.delete("/repositories/:id", (request, response) => {
   const { id } = request.params
-  
+
   const repositoryIndex = repositories.findIndex((repository) => repository.id === id)
 
   if (repositoryIndex < 0) {
-    return response.status(400).json({error: "id não encontrado."})
+    return response.status(400).json({ error: "id not found." })
   }
-  
+
   repositories.splice(repositoryIndex, 1)
-  
+
   return response.status(204).send()
 });
 
 app.post("/repositories/:id/like", (request, response) => {
   const { id } = request.params
-  
+
   const repositoryIndex = repositories.findIndex((repository) => repository.id === id)
-  
+
   if (repositoryIndex < 0) {
-    return response.status(400).json({error: "id não encontrado."})
+    return response.status(400).json({ error: "id not found." })
   }
-  
+
   const repository = repositories[repositoryIndex]
-  
+
   repository.likes += 1
-  
-  return response.json(repository)
+
+  return response.json({ likes: repository.likes })
 });
 
 module.exports = app;
